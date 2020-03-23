@@ -19,14 +19,20 @@ type Post {
 }
 
 type Query {
-    user(id: ID! @eq): User @find
-    users(input: UsersInput @spread): [User!]! @all
+    user(id: ID! @eq): User @find @middleware(checks: ["auth:api"])
+    users(input: UsersInput @spread): [User!]! @all @middleware(checks: ["auth:api"])
+    me: User @auth(guard: "api")
+    post(id: ID! @eq): Post @find @middleware(checks: ["auth:api"])
+    posts(input: PostsInput @spread): [Post!]! @all @middleware(checks: ["auth:api"])
 }
 
 type Mutation {
     createUser(input: CreateUserInput! @spread): User! @create
     login(input: LoginInput! @spread): String @field(resolver: "AuthMutator@login")
     logout(api_token: String!): String @field(resolver: "AuthMutator@logout") @middleware(checks: ["auth:api"])
+    createPost(input: CreatePostInput! @spread): Post! @create @middleware(checks: ["auth:api"])
+    updatePost(input: UpdatePostInput! @spread): Post! @update @can(ability: "update", find: "id") @middleware(checks: ["auth:api"])
+    deletePost(id: ID! @eq): Post! @delete @can(ability: "delete", find:"id") @middleware(checks: ["auth:api"])
 }
 
 input UsersInput {
@@ -44,4 +50,22 @@ input CreateUserInput {
 input LoginInput {
     email: String!
     password: String!
+}
+
+input PostsInput {
+    title: String @where(operator: "like")
+    content: String @where(operator: "like")
+    orderBy: [OrderByClause!] @orderBy
+}
+
+input CreatePostInput {
+    title: String!
+    content: String!
+    userId: ID! @rename(attribute: "user_id") @rules(apply: ["exists:users,id"])
+}
+
+input UpdatePostInput {
+    id: ID! @eq
+    title: String
+    content: String
 }
