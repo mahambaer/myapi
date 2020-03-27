@@ -13,9 +13,9 @@ type User {
 
 type Post {
     id: ID!
-    title: String!
     content: String!
     createdBy: User! @belongsTo(relation: "user")
+    createdAt: DateTime @rename(attribute: "created_at")
 }
 
 type Query {
@@ -42,9 +42,9 @@ input UsersInput {
 }
 
 input CreateUserInput {
-    name: String!
-    email: String! @rules(apply: ["email", "unique:users,email"])
-    password: String! @bcrypt @rules(apply: ["min:6"])
+    name: String! @rules(apply: ["required"])
+    email: String! @rules(apply: ["required", "email", "unique:users,email"])
+    password: String! @rules(apply: ["required", "min:6"]) @bcrypt
 }
 
 input LoginInput {
@@ -53,19 +53,16 @@ input LoginInput {
 }
 
 input PostsInput {
-    title: String @where(operator: "like")
     content: String @where(operator: "like")
     orderBy: [OrderByClause!] @orderBy
 }
 
 input CreatePostInput {
-    title: String!
-    content: String!
+    content: String! @rules(applu: ["required"])
     userId: ID! @rename(attribute: "user_id") @rules(apply: ["exists:users,id"])
 }
 
 input UpdatePostInput {
     id: ID! @eq
-    title: String
-    content: String
+    content: String!
 }

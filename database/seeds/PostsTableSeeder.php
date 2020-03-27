@@ -17,7 +17,6 @@ class PostsTableSeeder extends Seeder
             foreach(range(1, 5) as $i) {
                 \App\Post::create([
                     'user_id' => $user->id,
-                    'title' => $faker->sentence,
                     'content' => $faker->paragraphs(3, true)
                 ]);
             }
